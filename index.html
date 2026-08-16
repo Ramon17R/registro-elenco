@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Movimentações — VAR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#060f0b;
+    --bg-1:#0b1a13;
+    --panel:rgba(22,46,36,0.55);
+    --panel-solid:#0e1f17;
+    --border:rgba(120,180,145,0.18);
+    --border-strong:rgba(140,200,165,0.35);
+    --ink:#e7f3ec;
+    --ink-dim:#9db8ac;
+    --ink-faint:#5f7a70;
+    --green:#4fbf85;
+    --green-bright:#7fe3ac;
+    --green-deep:#1d5c40;
+    --gold:#cfa75e;
+    --gold-dim:#8a723f;
+    --danger:#d97757;
+    --radius:14px;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(79,191,133,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(207,167,94,0.06), transparent 55%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%);
+    color:var(--ink);
+    font-family:var(--font-display);
+    padding:48px 20px 80px;
+    position:relative;
+  }
+
+  body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      linear-gradient(rgba(127,227,172,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(127,227,172,0.025) 1px, transparent 1px);
+    background-size:38px 38px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%);
+  }
+
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    position:relative;
+  }
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:24px;
+    padding-bottom:20px;
+    border-bottom:1px solid var(--border);
+  }
+  .brand-eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--green);
+    margin:0 0 8px;
+  }
+  h1{
+    font-size:28px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:-.02em;
+  }
+  .header-meta{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink-faint);
+    text-align:right;
+    line-height:1.6;
+  }
+  .header-meta strong{ color:var(--ink-dim); font-weight:500; }
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:26px;
+  }
+  .tab-btn{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    padding:10px 18px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    background:rgba(6,15,11,0.4);
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .tab-btn:hover{ color:var(--ink); border-color:var(--border-strong); }
+  .tab-btn.active{
+    background:linear-gradient(160deg, rgba(79,191,133,0.22), rgba(79,191,133,0.08));
+    border-color:var(--green);
+    color:var(--green-bright);
+  }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* ---------- panel ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    padding:26px 26px 28px;
+    margin-bottom:22px;
+    box-shadow:0 20px 40px -24px rgba(0,0,0,0.6);
+  }
+  .panel-title{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--green-bright);
+    margin:0 0 18px;
+  }
+  .panel-title .num{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--bg-0);
+    background:var(--green);
+    width:20px;height:20px;
+    border-radius:5px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+  }
+
+  /* ---------- fields ---------- */
+  .field{ margin-bottom:18px; }
+  .field:last-child{ margin-bottom:0; }
+  .field label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--ink-dim);
+    margin-bottom:8px;
+  }
+  .field .hint{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--ink-faint);
+    margin-top:6px;
+  }
+  input[type="text"], input[type="tel"]{
+    width:100%;
+    background:rgba(6,15,11,0.6);
+    border:1px solid var(--border);
+    border-radius:9px;
+    padding:12px 14px;
+    color:var(--ink);
+    font-family:var(--font-display);
+    font-size:15px;
+    outline:none;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  input[type="text"]:focus, input[type="tel"]:focus{
+    border-color:var(--green);
+    background:rgba(6,15,11,0.85);
+  }
+  input::placeholder{ color:var(--ink-faint); }
+
+  .valor-wrap{ position:relative; }
+  .valor-wrap input{ padding-left:44px; font-family:var(--font-mono); color:var(--gold); font-weight:600; }
+  .valor-wrap::before{
+    content:'R$';
+    position:absolute;
+    left:14px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--gold-dim);
+    font-weight:600;
+  }
+  .valor-wrap input:focus{ border-color:var(--gold); }
+  .valor-auto-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--green-bright);
+    margin-left:8px;
+    letter-spacing:.04em;
+  }
+  .valor-auto-tag.hidden{ display:none; }
+
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  @media (max-width:600px){ .two-col{ grid-template-columns:1fr; } }
+
+  /* ---------- category chips ---------- */
+  .cat-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin-bottom:4px;
+  }
+  .cat-chip{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.03em;
+    padding:9px 15px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:rgba(6,15,11,0.4);
+    color:var(--ink-dim);
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+  }
+  .cat-chip:hover{ border-color:var(--border-strong); color:var(--ink); }
+  .cat-chip.active{
+    background:linear-gradient(160deg, rgba(79,191,133,0.22), rgba(79,191,133,0.08));
+    border-color:var(--green);
+    color:var(--green-bright);
+  }
+  .cat-chip .count{
+    display:inline-block;
+    margin-left:6px;
+    font-size:10px;
+    color:var(--bg-0);
+    background:var(--green-bright);
+    border-radius:999px;
+    padding:1px 6px;
+    font-weight:700;
+    vertical-align:middle;
+  }
+
+  /* ---------- category catalog panels ---------- */
+  .cat-panels{ margin-top:18px; display:flex; flex-direction:column; gap:14px; }
+  .cat-panel{
+    border:1px solid var(--border);
+    border-radius:11px;
+    overflow:hidden;
+    background:rgba(6,15,11,0.35);
+  }
+  .cat-panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 16px;
+    background:rgba(29,92,64,0.18);
+    border-bottom:1px solid var(--border);
+  }
+  .cat-panel-head h3{
+    margin:0;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink);
+    letter-spacing:.02em;
+  }
+  .cat-panel-head .sub{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--ink-faint);
+  }
+
+  .item-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px;
+    background:var(--border);
+  }
+  @media (max-width:600px){ .item-grid{ grid-template-columns:1fr; } }
+
+  .item-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    background:var(--panel-solid);
+    transition:background .15s ease;
+  }
+  .item-row.checked{ background:rgba(79,191,133,0.09); }
+
+  .item-row input[type="checkbox"]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:16px; height:16px;
+    border-radius:4px;
+    border:1.5px solid var(--border-strong);
+    background:rgba(6,15,11,0.5);
+    cursor:pointer;
+    flex-shrink:0;
+    position:relative;
+    transition:all .15s ease;
+  }
+  .item-row input[type="checkbox"]:checked{
+    background:var(--green);
+    border-color:var(--green);
+  }
+  .item-row input[type="checkbox"]:checked::after{
+    content:'';
+    position:absolute;
+    left:5px; top:1.5px;
+    width:4px; height:8px;
+    border:solid var(--bg-0);
+    border-width:0 2px 2px 0;
+    transform:rotate(45deg);
+  }
+
+  .item-row label{
+    flex:1;
+    font-size:13.5px;
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:color .15s ease;
+  }
+  .item-row.checked label{ color:var(--ink); font-weight:500; }
+
+  .item-price{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--gold-dim);
+    margin-right:2px;
+    white-space:nowrap;
+  }
+  .item-row.checked .item-price{ color:var(--gold); }
+
+  .item-qty{
+    width:56px;
+    background:rgba(6,15,11,0.6);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--ink-faint);
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    text-align:center;
+    padding:5px 4px;
+    outline:none;
+    transition:all .15s ease;
+  }
+  .item-row.checked .item-qty{ color:var(--green-bright); border-color:var(--border-strong); }
+  .item-qty:disabled{ opacity:.4; }
+  .item-qty:focus{ border-color:var(--green); }
+
+  /* custom items (lavagem / solace / materiais) */
+  .custom-box{ padding:14px 16px; }
+  .custom-add{ display:flex; gap:8px; margin-bottom:10px; }
+  .custom-add input[type="text"]{ flex:2; padding:9px 12px; font-size:13px; }
+  .custom-add input.custom-qty{ flex:1; font-family:var(--font-mono); }
+  .custom-add button{
+    font-family:var(--font-mono);
+    font-size:12px;
+    padding:0 16px;
+    border-radius:8px;
+    border:1px solid var(--green);
+    background:rgba(79,191,133,0.14);
+    color:var(--green-bright);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .custom-add button:hover{ background:rgba(79,191,133,0.24); }
+  .custom-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .custom-tag{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    background:rgba(79,191,133,0.1);
+    border:1px solid var(--border-strong);
+    color:var(--green-bright);
+    padding:6px 10px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .custom-tag button{
+    background:none; border:none; color:var(--ink-faint);
+    cursor:pointer; font-size:13px; line-height:1; padding:0;
+  }
+  .custom-tag button:hover{ color:var(--danger); }
+  .custom-empty{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); }
+
+  /* ---------- buttons row ---------- */
+  .actions-row{
+    display:flex;
+    gap:12px;
+  }
+  .generate-btn{
+    flex:1;
+    padding:15px;
+    border-radius:11px;
+    border:1px solid var(--green);
+    background:linear-gradient(160deg, var(--green), var(--green-deep));
+    color:#04120b;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.02em;
+    cursor:pointer;
+    transition:transform .1s ease, box-shadow .15s ease;
+    box-shadow:0 12px 28px -12px rgba(79,191,133,0.45);
+  }
+  .generate-btn:hover{ transform:translateY(-1px); box-shadow:0 16px 34px -12px rgba(79,191,133,0.6); }
+  .generate-btn:active{ transform:translateY(0); }
+
+  .clear-btn{
+    padding:15px 22px;
+    border-radius:11px;
+    border:1px solid var(--border-strong);
+    background:rgba(6,15,11,0.5);
+    color:var(--ink-dim);
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .clear-btn:hover{ border-color:var(--danger); color:var(--danger); }
+
+  .error-msg{
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--danger);
+    margin-top:12px;
+    text-align:center;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
+
+  /* ---------- ticket / result ---------- */
+  .ticket-wrap{ margin-top:24px; display:none; }
+  .ticket-wrap.show{ display:block; }
+  .ticket{
+    position:relative;
+    background:
+      repeating-linear-gradient(135deg, rgba(207,167,94,0.03) 0 2px, transparent 2px 14px),
+      linear-gradient(165deg, #0d2117 0%, #081a12 100%);
+    border:1px dashed var(--border-strong);
+    border-radius:12px;
+    padding:22px 24px;
+    font-family:var(--font-mono);
+  }
+  .ticket-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+    padding-bottom:12px;
+    border-bottom:1px dashed var(--border);
+  }
+  .ticket-header .tag{
+    font-size:10.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--gold);
+  }
+  .copy-btn{
+    font-family:var(--font-mono);
+    font-size:11px;
+    padding:6px 12px;
+    border-radius:7px;
+    border:1px solid var(--border-strong);
+    background:rgba(6,15,11,0.5);
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .copy-btn:hover{ border-color:var(--green); color:var(--green-bright); }
+  .copy-btn.copied{ border-color:var(--green); color:var(--green-bright); }
+
+  .ticket-body{
+    font-size:13.5px;
+    line-height:2;
+    color:var(--ink);
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:36px;
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    color:var(--ink-faint);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- histórico ---------- */
+  .hist-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .hist-count{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--ink-faint);
+  }
+  .hist-clear{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    padding:8px 14px;
+    border-radius:8px;
+    border:1px solid var(--border-strong);
+    background:rgba(6,15,11,0.5);
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .hist-clear:hover{ border-color:var(--danger); color:var(--danger); }
+
+  .hist-empty{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    color:var(--ink-faint);
+    text-align:center;
+    padding:40px 20px;
+    border:1px dashed var(--border);
+    border-radius:12px;
+  }
+
+  .hist-list{ display:flex; flex-direction:column; gap:12px; }
+  .hist-item{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+  }
+  .hist-item-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .hist-item-date{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--green-bright);
+    letter-spacing:.03em;
+  }
+  .hist-item-actions{ display:flex; gap:8px; }
+  .hist-item-actions button{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    padding:5px 10px;
+    border-radius:6px;
+    border:1px solid var(--border-strong);
+    background:rgba(6,15,11,0.5);
+    color:var(--ink-dim);
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .hist-item-actions button:hover{ border-color:var(--green); color:var(--green-bright); }
+  .hist-item-actions button.del:hover{ border-color:var(--danger); color:var(--danger); }
+  .hist-item-body{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    line-height:1.9;
+    color:var(--ink-dim);
+    white-space:pre-wrap;
+    word-break:break-word;
+  }
+  .hist-item-body b{ color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="brand-eyebrow">Livro-caixa · ELENCO</p>
+      <h1>Registro de Movimentações</h1>
+    </div>
+    <div class="header-meta">
+      <div><strong>status</strong> aberto</div>
+      <div id="clockLine"></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-view="registro">Registro</button>
+    <button class="tab-btn" data-view="historico">Histórico</button>
+  </div>
+
+  <!-- ============ VIEW: REGISTRO ============ -->
+  <div class="view active" id="view-registro">
+
+    <!-- DATA + GRUPO -->
+    <div class="panel">
+      <p class="panel-title"><span class="num">1</span> Identificação</p>
+      <div class="two-col">
+        <div class="field">
+          <label for="fData">Data</label>
+          <input type="text" id="fData" placeholder="ex: 12/08/2026">
+        </div>
+        <div class="field">
+          <label for="fGrupo">Grupo</label>
+          <input type="text" id="fGrupo" placeholder="ex: Filhos do Cangaço (Bennys01)">
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="panel">
+      <p class="panel-title"><span class="num">2</span> Produtos</p>
+      <div class="cat-grid" id="catGrid"></div>
+      <div class="cat-panels" id="catPanels"></div>
+    </div>
+
+    <!-- VALOR -->
+    <div class="panel">
+      <p class="panel-title"><span class="num">3</span> Valor</p>
+      <div class="field">
+        <label for="fValor">Valor total (R$)
+          <span class="valor-auto-tag hidden" id="valorAutoTag">● calculado automaticamente</span>
+        </label>
+        <div class="valor-wrap">
+          <input type="tel" id="fValor" placeholder="0" inputmode="numeric">
+        </div>
+        <p class="hint">Somado automaticamente pelo catálogo de preços conforme os itens marcados.</p>
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button class="generate-btn" id="btnGerar">Gerar mensagem</button>
+      <button class="clear-btn" id="btnLimpar">Limpar</button>
+    </div>
+    <p class="error-msg" id="errorMsg"></p>
+
+    <div class="ticket-wrap" id="ticketWrap">
+      <div class="ticket">
+        <div class="ticket-header">
+          <span class="tag">Comprovante gerado</span>
+          <button class="copy-btn" id="btnCopy">Copiar</button>
+        </div>
+        <div class="ticket-body" id="ticketBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW: HISTÓRICO ============ -->
+  <div class="view" id="view-historico">
+    <div class="panel">
+      <div class="hist-toolbar">
+        <span class="hist-count" id="histCount">0 comprovantes salvos</span>
+        <button class="hist-clear" id="btnLimparHist">Limpar histórico</button>
+      </div>
+      <div id="histContainer"></div>
+    </div>
+  </div>
+
+  <footer>PAINEL ELENCO — REGISTRO INTERNO DE COMPRAS E VENDAS.</footer>
+</div>
+
+<script>
+  // ---------- tabela de preços ----------
+  const PRECOS = {
+    armas: {
+      'Five-Seven':15000,'Glock Rajada':25000,'TEC-9':25000,'Uzi':25000,
+      'EVO-3':30000,'TECPISTOL':30000,'MPX':30000,'Skorpion':30000,'MTAR':30000,
+      'AK Compact':45000,'G36C':45000,'QBZ-95':45000,'AK-103':45000,'TAR-21':45000,
+      'L85':50000,'SIG Sauer 556':50000,'AK-74':50000,'FAL':50000,'SCAR':50000,'M4A4':50000,
+      'Mossberg Cano Curto':35000,'Mossberg Cano Longo':55000,'TRIZZ':40000,'W110':70000
+    },
+    municoes: { 'Pistola':50,'Submetralhadora':90,'Rifle':130,'Escopeta':200 },
+    contrabando: {
+      'C4':2000,'Algemas':2000,'Capuz':2000,'Colete':2000,'Álcool em Gel':2000,'Placas':2000,
+      'Rastreador de celular':20000,'Bloqueador de celular':10000
+    },
+    drogas: {
+      'Pó de Anjo':80,'Fentanil':80,'K9':80,'Soro Anti-Toxina':80,'Krokodil':80,
+      'Oxicodona':80,'Crack':80,'Mescalina':80
+      // Lança perfume e Tormenta não têm preço tabelado informado
+    },
+    bennys: {
+      'Piggyback':15000,'Bloqueador de Sinal':10000,'Rastreador de veículo':5000,
+      'Masterpick':5000,'Kit de Sabotagem':5000,'Chave de Roda':4000,'Chave de Freio':4000
+    },
+    medicamentos: { 'Soro Medicinal':2000,'Adrenalina':2000 }
+  };
+
+  // ---------- data ----------
+  const CATEGORIAS = {
+    armas: { label:'Armas', itens:['Five-Seven','Glock Rajada','TEC-9','Uzi','EVO-3','TECPISTOL','MPX','Skorpion','MTAR','AK Compact','G36C','QBZ-95','AK-103','TAR-21','L85','SIG Sauer 556','AK-74','FAL','SCAR','M4A4','Mossberg Cano Curto','Mossberg Cano Longo','TRIZZ','W110'] },
+    municoes: { label:'Munições', itens:['Pistola','Submetralhadora','Rifle','Escopeta'] },
+    contrabando: { label:'Contrabando', itens:['C4','Algemas','Capuz','Colete','Álcool em Gel','Rastreador de celular','Bloqueador de celular','Placas'] },
+    drogas: { label:'Drogas', itens:['Pó de Anjo','Fentanil','K9','Soro Anti-Toxina','Krokodil','Oxicodona','Crack','Mescalina','Lança perfume','Tormenta'] },
+    bennys: { label:'Bennys', itens:['Piggyback','Bloqueador de Sinal','Rastreador de veículo','Masterpick','Kit de Sabotagem','Chave de Roda','Chave de Freio'] },
+    lavagem: { label:'Lavagem', itens:null },
+    medicamentos: { label:'Medicamentos', itens:['Soro Medicinal','Adrenalina'] },
+    materiais: { label:'Materiais', itens:['Alumínio','Cobre','Borracha','Garrafas Plásticas','Plásticos','Vidro','Alumínio Forjado','Pólvora','Escamas','Papéis','Componentes de Armas','Munição Base','Pedaços de escamas','Réplica de reais'] },
+    solace: { label:'Solace', itens:null },
+  };
+
+  function precoDe(catKey, itemName){
+    return (PRECOS[catKey] && PRECOS[catKey][itemName]) || 0;
+  }
+
+  const state = {
+    activeCats: new Set(),
+    selections: {},   // catKey -> { itemName: qty }
+    customItems: {},  // catKey -> [{name, qty}]
+  };
+  Object.keys(CATEGORIAS).forEach(k=>{ state.selections[k]={}; state.customItems[k]=[]; });
+
+  const catGrid = document.getElementById('catGrid');
+  const catPanels = document.getElementById('catPanels');
+  const fValor = document.getElementById('fValor');
+  const valorAutoTag = document.getElementById('valorAutoTag');
+
+  function buildChips(){
+    catGrid.innerHTML='';
+    Object.entries(CATEGORIAS).forEach(([key, cat])=>{
+      const chip = document.createElement('div');
+      chip.className = 'cat-chip';
+      chip.dataset.key = key;
+      chip.innerHTML = cat.label;
+      chip.addEventListener('click', ()=> toggleCategory(key));
+      catGrid.appendChild(chip);
+    });
+  }
+
+  function toggleCategory(key){
+    if(state.activeCats.has(key)){ state.activeCats.delete(key); }
+    else{ state.activeCats.add(key); }
+    render();
+  }
+
+  function itemCountFor(key){
+    const cat = CATEGORIAS[key];
+    if(cat.itens){
+      return Object.values(state.selections[key]).filter(q=>q>0).length;
+    }
+    return state.customItems[key].length;
+  }
+
+  function calcularValorAutomatico(){
+    let total = 0;
+    let temItemComPreco = false;
+    Object.entries(CATEGORIAS).forEach(([key, cat])=>{
+      if(!cat.itens) return;
+      Object.entries(state.selections[key]).forEach(([name, qty])=>{
+        const q = Number(qty) || 0;
+        const preco = precoDe(key, name);
+        if(q > 0 && preco > 0){
+          total += preco * q;
+          temItemComPreco = true;
+        }
+      });
+    });
+    return { total, temItemComPreco };
+  }
+
+  function atualizarValorAutomatico(){
+    const { total, temItemComPreco } = calcularValorAutomatico();
+    if(temItemComPreco){
+      fValor.value = total.toLocaleString('pt-BR');
+      valorAutoTag.classList.remove('hidden');
+    } else {
+      valorAutoTag.classList.add('hidden');
+    }
+  }
+
+  function render(){
+    // chips
+    [...catGrid.children].forEach(chip=>{
+      const key = chip.dataset.key;
+      const active = state.activeCats.has(key);
+      chip.classList.toggle('active', active);
+      const count = itemCountFor(key);
+      chip.innerHTML = CATEGORIAS[key].label + (count>0 ? `<span class="count">${count}</span>` : '');
+    });
+
+    // panels
+    catPanels.innerHTML='';
+    [...state.activeCats].forEach(key=>{
+      const cat = CATEGORIAS[key];
+      const panel = document.createElement('div');
+      panel.className = 'cat-panel';
+
+      const head = document.createElement('div');
+      head.className = 'cat-panel-head';
+      head.innerHTML = `<h3>${cat.label}</h3><span class="sub">${cat.itens ? cat.itens.length+' itens' : 'itens personalizados'}</span>`;
+      panel.appendChild(head);
+
+      if(cat.itens){
+        const grid = document.createElement('div');
+        grid.className = 'item-grid';
+        cat.itens.forEach(itemName=>{
+          const qty = state.selections[key][itemName] || '';
+          const checked = qty !== '' && Number(qty) > 0;
+          const preco = precoDe(key, itemName);
+          const row = document.createElement('div');
+          row.className = 'item-row' + (checked ? ' checked' : '');
+          const safeId = key + '_' + itemName.replace(/[^a-zA-Z0-9]/g,'');
+          row.innerHTML = `
+            <input type="checkbox" id="${safeId}" ${checked?'checked':''}>
+            <label for="${safeId}">${itemName}</label>
+            ${preco>0 ? `<span class="item-price">R$ ${preco.toLocaleString('pt-BR')}</span>` : ''}
+            <input type="tel" inputmode="numeric" class="item-qty" placeholder="qtd" value="${qty}" ${checked?'':'disabled'}>
+          `;
+          const checkbox = row.querySelector('input[type="checkbox"]');
+          const qtyInput = row.querySelector('.item-qty');
+
+          checkbox.addEventListener('change', ()=>{
+            if(checkbox.checked){
+              qtyInput.disabled = false;
+              qtyInput.value = qtyInput.value || '1';
+              state.selections[key][itemName] = qtyInput.value;
+              qtyInput.focus();
+              qtyInput.select();
+            } else {
+              qtyInput.disabled = true;
+              delete state.selections[key][itemName];
+            }
+            row.classList.toggle('checked', checkbox.checked);
+            render();
+            atualizarValorAutomatico();
+          });
+
+          qtyInput.addEventListener('input', ()=>{
+            qtyInput.value = qtyInput.value.replace(/[^0-9]/g,'');
+            if(checkbox.checked){
+              state.selections[key][itemName] = qtyInput.value;
+            }
+            const chip = [...catGrid.children].find(c=>c.dataset.key===key);
+            const count = itemCountFor(key);
+            chip.innerHTML = CATEGORIAS[key].label + (count>0 ? `<span class="count">${count}</span>` : '');
+            atualizarValorAutomatico();
+          });
+
+          grid.appendChild(row);
+        });
+        panel.appendChild(grid);
+      } else {
+        // custom items UI (Lavagem / Solace)
+        const box = document.createElement('div');
+        box.className = 'custom-box';
+        box.innerHTML = `
+          <div class="custom-add">
+            <input type="text" class="custom-name" placeholder="nome do item">
+            <input type="tel" inputmode="numeric" class="custom-qty" placeholder="qtd">
+            <button type="button">Adicionar</button>
+          </div>
+          <div class="custom-list"></div>
+        `;
+        const nameInput = box.querySelector('.custom-name');
+        const qtyInput = box.querySelector('.custom-qty');
+        const addBtn = box.querySelector('button');
+        const list = box.querySelector('.custom-list');
+
+        function renderCustomList(){
+          list.innerHTML='';
+          const items = state.customItems[key];
+          if(items.length===0){
+            list.innerHTML = '<span class="custom-empty">nenhum item adicionado</span>';
+            return;
+          }
+          items.forEach((it, idx)=>{
+            const tag = document.createElement('span');
+            tag.className = 'custom-tag';
+            tag.innerHTML = `${it.qty} ${it.name} <button type="button">×</button>`;
+            tag.querySelector('button').addEventListener('click', ()=>{
+              state.customItems[key].splice(idx,1);
+              renderCustomList();
+              render();
+            });
+            list.appendChild(tag);
+          });
+        }
+
+        function addCustom(){
+          const name = nameInput.value.trim();
+          let qty = qtyInput.value.replace(/[^0-9]/g,'');
+          if(!name || !qty || Number(qty)<=0) return;
+          state.customItems[key].push({name, qty});
+          nameInput.value=''; qtyInput.value='';
+          renderCustomList();
+          render();
+          nameInput.focus();
+        }
+
+        addBtn.addEventListener('click', addCustom);
+        qtyInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addCustom(); });
+        nameInput.addEventListener('keydown', e=>{ if(e.key==='Enter') addCustom(); });
+        qtyInput.addEventListener('input', ()=>{ qtyInput.value = qtyInput.value.replace(/[^0-9]/g,''); });
+
+        renderCustomList();
+        box.appendChild(list);
+        panel.appendChild(box);
+      }
+
+      catPanels.appendChild(panel);
+    });
+  }
+
+  buildChips();
+  render();
+
+  // ---------- valor field formatting (manual typing) ----------
+  fValor.addEventListener('input', ()=>{
+    let digits = fValor.value.replace(/[^0-9]/g,'');
+    digits = digits.replace(/^0+(?=\d)/,'');
+    fValor.value = digits ? Number(digits).toLocaleString('pt-BR') : '';
+    // se o usuário digitar manualmente algo diferente do total automático, escondemos a tag
+    const { total } = calcularValorAutomatico();
+    const digitsNum = digits ? Number(digits) : 0;
+    valorAutoTag.classList.toggle('hidden', digitsNum !== total);
+  });
+
+  // ---------- generate message ----------
+  const btnGerar = document.getElementById('btnGerar');
+  const btnLimpar = document.getElementById('btnLimpar');
+  const errorMsg = document.getElementById('errorMsg');
+  const ticketWrap = document.getElementById('ticketWrap');
+  const ticketBody = document.getElementById('ticketBody');
+  const btnCopy = document.getElementById('btnCopy');
+
+  function collectItens(){
+    const parts = [];
+    Object.entries(CATEGORIAS).forEach(([key, cat])=>{
+      if(cat.itens){
+        Object.entries(state.selections[key]).forEach(([name, qty])=>{
+          if(qty && Number(qty) > 0){
+            parts.push(`${Number(qty)} ${name}`);
+          }
+        });
+      } else {
+        state.customItems[key].forEach(it=>{
+          parts.push(`${Number(it.qty)} ${it.name}`);
+        });
+      }
+    });
+    return parts;
+  }
+
+  btnGerar.addEventListener('click', ()=>{
+    const data = document.getElementById('fData').value.trim();
+    const grupo = document.getElementById('fGrupo').value.trim();
+    const valor = fValor.value.trim();
+    const itens = collectItens();
+
+    if(!data || !grupo || !valor || itens.length===0){
+      errorMsg.textContent = 'Preencha Data, Grupo, ao menos um item de Produtos e o Valor.';
+      errorMsg.classList.add('show');
+      ticketWrap.classList.remove('show');
+      return;
+    }
+    errorMsg.classList.remove('show');
+
+    const itensTxt = itens.join(', ');
+    const msg =
+`**Data:** ${data}
+**Grupo:** ${grupo}
+**Itens:** ${itensTxt}
+**Valor:** R$ ${valor}`;
+
+    ticketBody.textContent = msg;
+    ticketBody.dataset.raw = msg;
+
+    ticketWrap.classList.add('show');
+    ticketWrap.scrollIntoView({behavior:'smooth', block:'center'});
+
+    salvarNoHistorico({ data, grupo, itensTxt, valor, msg, criadoEm: Date.now() });
+  });
+
+  function limparFormulario(){
+    document.getElementById('fData').value = '';
+    document.getElementById('fGrupo').value = '';
+    fValor.value = '';
+    valorAutoTag.classList.add('hidden');
+    state.activeCats.clear();
+    Object.keys(CATEGORIAS).forEach(k=>{ state.selections[k]={}; state.customItems[k]=[]; });
+    render();
+    errorMsg.classList.remove('show');
+    ticketWrap.classList.remove('show');
+    ticketBody.textContent = '';
+  }
+
+  btnLimpar.addEventListener('click', limparFormulario);
+
+  function showCopied(btn){
+    const original = btn.textContent;
+    btn.textContent = 'Copiado ✓';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent = original; btn.classList.remove('copied'); }, 1600);
+  }
+
+  function fallbackCopy(text, btn){
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-9999px';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){ showCopied(btn); }
+      else{ btn.textContent = 'Selecione manualmente'; setTimeout(()=>{ btn.textContent='Copiar'; },2200); }
+    }catch(err){
+      document.body.removeChild(ta);
+      btn.textContent = 'Selecione manualmente';
+      setTimeout(()=>{ btn.textContent='Copiar'; },2200);
+    }
+  }
+
+  function copiarTexto(text, btn){
+    if(navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(text).then(()=>showCopied(btn)).catch(()=> fallbackCopy(text, btn));
+    } else {
+      fallbackCopy(text, btn);
+    }
+  }
+
+  btnCopy.addEventListener('click', ()=>{
+    copiarTexto(ticketBody.dataset.raw || '', btnCopy);
+  });
+
+  // clock
+  function updateClock(){
+    const now = new Date();
+    document.getElementById('clockLine').innerHTML =
+      `<strong>${now.toLocaleDateString('pt-BR')}</strong> ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // ---------- tabs ----------
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const views = { registro: document.getElementById('view-registro'), historico: document.getElementById('view-historico') };
+  tabBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      tabBtns.forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      Object.values(views).forEach(v=>v.classList.remove('active'));
+      views[btn.dataset.view].classList.add('active');
+      if(btn.dataset.view === 'historico') renderHistorico();
+    });
+  });
+
+  // ---------- histórico (localStorage) ----------
+  const HIST_KEY = 'var_historico_comprovantes';
+
+  function getHistorico(){
+    try{ return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function setHistorico(arr){
+    localStorage.setItem(HIST_KEY, JSON.stringify(arr));
+  }
+  function salvarNoHistorico(entry){
+    const arr = getHistorico();
+    arr.unshift(entry);
+    setHistorico(arr);
+  }
+
+  const histContainer = document.getElementById('histContainer');
+  const histCount = document.getElementById('histCount');
+  const btnLimparHist = document.getElementById('btnLimparHist');
+
+  function renderHistorico(){
+    const arr = getHistorico();
+    histCount.textContent = arr.length + (arr.length===1 ? ' comprovante salvo' : ' comprovantes salvos');
+
+    if(arr.length===0){
+      histContainer.innerHTML = '<div class="hist-empty">Nenhum comprovante gerado ainda. Os comprovantes aparecem aqui automaticamente após clicar em "Gerar mensagem".</div>';
+      return;
+    }
+
+    const list = document.createElement('div');
+    list.className = 'hist-list';
+
+    arr.forEach((entry, idx)=>{
+      const item = document.createElement('div');
+      item.className = 'hist-item';
+      const dt = new Date(entry.criadoEm);
+      const registradoEm = isNaN(dt) ? '' : dt.toLocaleDateString('pt-BR') + ' às ' + dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+      item.innerHTML = `
+        <div class="hist-item-top">
+          <span class="hist-item-date">${registradoEm}</span>
+          <div class="hist-item-actions">
+            <button type="button" class="copy">Copiar</button>
+            <button type="button" class="del">Excluir</button>
+          </div>
+        </div>
+        <div class="hist-item-body"><b>Data:</b> ${entry.data} · <b>Grupo:</b> ${entry.grupo}\n<b>Itens:</b> ${entry.itensTxt}\n<b>Valor:</b> R$ ${entry.valor}</div>
+      `;
+
+      item.querySelector('.copy').addEventListener('click', (e)=> copiarTexto(entry.msg, e.target));
+      item.querySelector('.del').addEventListener('click', ()=>{
+        const cur = getHistorico();
+        cur.splice(idx,1);
+        setHistorico(cur);
+        renderHistorico();
+      });
+
+      list.appendChild(item);
+    });
+
+    histContainer.innerHTML = '';
+    histContainer.appendChild(list);
+  }
+
+  btnLimparHist.addEventListener('click', ()=>{
+    if(confirm('Tem certeza que deseja apagar todo o histórico de comprovantes? Essa ação não pode ser desfeita.')){
+      setHistorico([]);
+      renderHistorico();
+    }
+  });
+</script>
+</body>
+</html>
